@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app:cached  # For development only
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  db:
+    image: postgis/postgis
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password  # Verwende ein sicheres Passwort
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Verknüpfe das benannte Volume
+
+volumes:
+  postgres_data:
