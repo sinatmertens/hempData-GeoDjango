@@ -20,6 +20,8 @@ services:
       POSTGRES_PASSWORD: your_password  # Verwende ein sicheres Passwort
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Verknüpfe das benannte Volume
+    ports:
+      - "15432:5432"  # Map the container's Postgres port to the host
 
 volumes:
   postgres_data:

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map of Fields and Plots</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+</head>
+<body>
+    <h1>Map of Fields and Plots</h1>
+    <div id="map" style="height: 600px;"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script>
+        // Initialize the map centered around Leipzig
+        var map = L.map('map').setView([51.2134, 12.2692], 16);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Convert context data from Django to GeoJSON
+        var fields = {{ fields_geojson|safe }};
+        var plots = {{ plots_geojson|safe }};
+
+        // Add fields to the map
+        L.geoJSON(fields, {
+            style: { color: "green", weight: 2 }
+        }).addTo(map);
+
+        // Add plots to the map
+        L.geoJSON(plots, {
+            style: { color: "blue", weight: 1 }
+        }).addTo(map);
+    </script>
+</body>
+</html>
