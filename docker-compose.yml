@@ -1,27 +1,42 @@
 version: '3.9'
 
 services:
-  web:
+  web:  # GeoDjango-Service
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile  # Dockerfile für GeoDjango
     volumes:
-      - .:/app:cached  # For development only
+      - .:/app:cached  # Nur für Entwicklung
     ports:
-      - "8000:8000"
+      - "8000:8000"  # GeoDjango läuft auf Port 8000
     depends_on:
-      - db
+      - db  # Abhängigkeit von der Datenbank
+    environment:
+      - DATABASE_URL=postgresql://postgres:your_password@db:5432/postgres  # Verbindung zur Datenbank
 
-  db:
+  dash:  # Plotly Dash-Service
+    build:
+      context: .
+      dockerfile: Dockerfile.dash  # Dockerfile speziell für Dash
+    volumes:
+      - ./dash_app:/app/dash_app:cached  # Nur Dash-App wird in den Container gemountet
+    ports:
+      - "8050:8050"  # Dash läuft auf Port 8050
+    depends_on:
+      - db  # Abhängigkeit von der Datenbank
+    environment:
+      - DATABASE_URL=postgresql://postgres:your_password@db:5432/postgres  # Verbindung zur Datenbank
+
+  db:  # PostgreSQL/PostGIS-Datenbank
     image: postgis/postgis
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: your_password  # Verwende ein sicheres Passwort
+      POSTGRES_PASSWORD: your_password  # Sicheres Passwort
     volumes:
-      - postgres_data:/var/lib/postgresql/data  # Verknüpfe das benannte Volume
+      - postgres_data:/var/lib/postgresql/data  # Benanntes Volume für persistente Daten
     ports:
-      - "15432:5432"  # Map the container's Postgres port to the host
+      - "15432:5432"  # Postgres-Port nach außen verfügbar machen
 
 volumes:
-  postgres_data:
+  postgres_data:  # Benanntes Volume für Datenbankdaten

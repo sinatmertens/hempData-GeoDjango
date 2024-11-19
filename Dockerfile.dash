@@ -1,0 +1,18 @@
+# Verwende Python 3.10 als Basis
+FROM python:3.10-slim
+
+# Setze Arbeitsverzeichnis
+WORKDIR /app
+
+# Kopiere Dash-spezifische Anforderungen
+COPY requirements.dash.txt .
+RUN pip install --no-cache-dir -r requirements.dash.txt
+
+# Kopiere nur die Dash-App
+COPY dash_app/ ./dash_app/
+
+# Exponiere den Dash-Port
+EXPOSE 8050
+
+# Starte die Dash-App
+CMD ["python", "dash_app/app.py"]

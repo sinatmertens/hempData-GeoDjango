@@ -30,8 +30,8 @@ class SurveyCategory(models.Model):
     name = models.CharField(max_length=100)  # e.g., "Weather Measurement" or "Soil Quality"
 
     class Meta:
-        verbose_name = "Kategorie"
-        verbose_name_plural = "Kategorien"
+        verbose_name = "Erhebungs-Kategorie"
+        verbose_name_plural = "Erhebungs-Kategorien"
 
     def __str__(self):
         return self.name
@@ -130,7 +130,7 @@ class WeatherStation(models.Model):
 
     class Meta:
         verbose_name = "Wetterstation"
-        verbose_name_plural = "Wetterstation"
+        verbose_name_plural = "Wetterstationen"
 
     def __str__(self):
         return f"Wetterstation {self.id}"

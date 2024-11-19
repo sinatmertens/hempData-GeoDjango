@@ -16,7 +16,6 @@ def map_view(request):
     }
     return render(request, 'hempdata/map_view.html', context)
 
-
 def add_preparation_data(request):
     if request.method == 'POST':
         form = PreparationDataForm(request.POST)

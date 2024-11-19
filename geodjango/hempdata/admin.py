@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.gis import admin
 from .models import Field, SurveyCategory, Plot, PreparationData
+from .models import SoilData, WeatherData, WeatherStation, PlantCharacteristicsTop, PlantCharacteristicsBase
 from import_export.admin import ImportExportModelAdmin
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import ValidationError
@@ -66,7 +67,7 @@ class FieldAdmin(ImportExportModelAdmin):
     resource_class = FieldResource  # Attach the resource class
 
 
-# Admin for SurveyCategory without map
+# Admin for SurveyCategory
 class SurveyCategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
@@ -76,8 +77,34 @@ class PreparationDataAdmin(admin.ModelAdmin):
     list_display = ('plot', 'crop_type', 'seeding_rate', 'fertilization_amount', 'soil_preparation')
 
 
+# SoilData, WeatherData, WeatherStation, PlantCharacteristicsTop, PlantCharacteristicsBase
+class SoilDataAdmin(admin.ModelAdmin):
+    list_display = ('id', 'plot')
+
+
+class WeatherDataAdmin(admin.ModelAdmin):
+    list_display = ('id',)
+
+
+class WeatherStationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'location')
+
+
+class PlantCharacteristicsTopAdmin(admin.ModelAdmin):
+    list_display = ('id', 'plot')
+
+
+class PlantCharacteristicsBaseAdmin(admin.ModelAdmin):
+    list_display = ('id', 'plot', 'height', 'color', 'growth_form', 'stem_diameter', 'damage')
+
+
 # Register models with their custom admin classes
 admin.site.register(Field, FieldAdmin)
 admin.site.register(SurveyCategory, SurveyCategoryAdmin)
 admin.site.register(Plot, PlotAdmin)
 admin.site.register(PreparationData, PreparationDataAdmin)
+admin.site.register(SoilData, SoilDataAdmin)
+admin.site.register(WeatherData, WeatherDataAdmin)
+admin.site.register(WeatherStation, WeatherStationAdmin)
+admin.site.register(PlantCharacteristicsTop, PlantCharacteristicsTopAdmin)
+admin.site.register(PlantCharacteristicsBase, PlantCharacteristicsBaseAdmin)
