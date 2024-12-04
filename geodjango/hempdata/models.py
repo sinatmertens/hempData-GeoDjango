@@ -1,158 +1,234 @@
 from django.contrib.gis.db import models
-from django.core.exceptions import ValidationError
+from django.utils.timezone import now
+from datetime import date
+import uuid
 
 
 class Field(models.Model):
-    id = models.AutoField(primary_key=True)  # Automatic ID fiel Firled
-    name = models.CharField(max_length=100)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    name = models.CharField(max_length=255)
+    size = models.IntegerField()
     location = models.PolygonField()
-    size = models.DecimalField(max_digits=10, decimal_places=2, editable=False,
-                               verbose_name="Größe (ha)")  # Make size non-editable
-
-    def save(self, *args, **kwargs):
-        # Calculate area based on the polygon's geometry and convert to hectares (assuming SRID is 4326)
-        if self.location:
-            # Convert to an SRID suitable for area calculation if necessary
-            self.size = self.location.transform(3857, clone=True).area / 10000  # Area in hectares
-        super().save(*args, **kwargs)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Feld"  # Singular
-        verbose_name_plural = "Felder"  # Plural
+        verbose_name = "Standort - Feld"  # Singular
+        verbose_name_plural = "Standort - Felder"  # Plural
 
     def __str__(self):
         return self.name
 
 
-# Category model for dividing into different survey types
-class SurveyCategory(models.Model):
-    id = models.AutoField(primary_key=True)  # Automatic ID for the category
-    name = models.CharField(max_length=100)  # e.g., "Weather Measurement" or "Soil Quality"
-
-    class Meta:
-        verbose_name = "Erhebungs-Kategorie"
-        verbose_name_plural = "Erhebungs-Kategorien"
-
-    def __str__(self):
-        return self.name
-
-
-# Plot model for individual divisions of a field
 class Plot(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name="Schlag ID")  # Automatic ID for the plot
-    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name='plots', verbose_name="In Feld")
-    category = models.ForeignKey(SurveyCategory, on_delete=models.CASCADE, related_name='plots',
-                                 verbose_name="Kategorie")
-    location = models.PolygonField()  # Geometry of the plot for a specific category
-    size = models.DecimalField(max_digits=10, decimal_places=2, editable=False,
-                               verbose_name="Größe (ha)")  # Make size non-editable
-
-    def save(self, *args, **kwargs):
-        # Calculate area based on the polygon's geometry and convert to hectares
-        if self.location:
-            self.size = self.location.transform(3857, clone=True).area / 10000  # Area in hectares
-        super().save(*args, **kwargs)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    field = models.ForeignKey(Field, on_delete=models.CASCADE, related_name="plots")
+    name = models.CharField(max_length=255)
+    size = models.IntegerField()
+    location = models.PolygonField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Schlag"
-        verbose_name_plural = "Schläge"
+        verbose_name = "Standort - Schlag"  # Singular
+        verbose_name_plural = "Standort - Schläge"  # Plural
 
     def __str__(self):
-        return f"Schlag {self.id} in {self.field.name}"
-
-
-# Preparation Data model for field setup information
-class PreparationData(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name="ID")
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='preparation_data', verbose_name="Schlag")
-    crop_type = models.CharField(max_length=100, verbose_name="Kulturart")  # Crop type (e.g., hemp variety)
-    seeding_rate = models.DecimalField(max_digits=5, decimal_places=2,
-                                       verbose_name="Aussaatstärke (kg/ha)")  # Seeding rate in plants/m² or kg/ha
-    fertilization_amount = models.DecimalField(max_digits=5, decimal_places=2,
-                                               verbose_name="Düngemenge (kg N/ha)")  # Fertilizer amount in kg N/ha
-    soil_preparation = models.CharField(max_length=100,
-                                        verbose_name="Bodenvorbereitung (qual. Beschreibung)")  # Soil preparation method (qualitative)
-
-    class Meta:
-        verbose_name = "Feldvorbereitung"
-        verbose_name_plural = "Feldvorbereitungen"
-
-    def __str__(self):
-        return f"Vorbereitungsdaten für Schlag {self.plot.id}"
-
-
-class PlantCharacteristicsBase(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name="ID")
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='plant_characteristics_base', verbose_name="Schlag")
-    # TODO: Notwendigkeit, Höhe auch händisch zu bestimmen?
-    height = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Wuchshöhe")
-    # TODO: Kategorisierung von Blattfarben?
-    color = models.CharField(max_length=50, verbose_name="Blattfarbe")
-    # TODO: Wie ist die Wuchsform anzugeben? Gerade, krumm? Oder Ranking?
-    growth_form = models.CharField(max_length=50, verbose_name="Wuchsform")
-    # TODO: Angabe in mm oder cm?
-    stem_diameter = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Stängeldurchmesser")
-    # TODO: Freies Textfeld?
-    damage = models.TextField(verbose_name="Schaden (Wild, Hadel, etc.)")
-
-    # TODO: Erhebungszeitraum
-
-    class Meta:
-        verbose_name = "Pflanzenmerkmal - unten"
-        verbose_name_plural = "Pflanzenmerkmale - unten"
-
-    def __str__(self):
-        return f"Pflanzenmerkmale (unten) {self.id}"
-
-
-class PlantCharacteristicsTop(models.Model):
-    # TODO: Falls das die Tabelle für die Drohne ist, kommt hier sicherlich noch mehr
-    id = models.AutoField(primary_key=True, verbose_name="ID")
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='plant_characteristics_top', verbose_name="Schlag")
-
-    # datetime
-
-    class Meta:
-        verbose_name = "Pflanzenmerkmale - oben"
-        verbose_name_plural = "Pflanzenmerkmale - oben"
-
-    def __str__(self):
-        return f"Pflanzenmerkmale (oben) {self.id}"
+        return f"{self.name} in {self.field.name}"
 
 
 class WeatherStation(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID")
     location = models.PointField()
 
-    # TODO: field # Auf welchem Feld steht die Wetterstation?
-    # TODO: Exakte Position der Station
-    # TODO: Modell name
-
     class Meta:
-        verbose_name = "Wetterstation"
-        verbose_name_plural = "Wetterstationen"
+        verbose_name = "Standort - Wetterstation"
+        verbose_name_plural = "Standort - Wetterstationen"
 
     def __str__(self):
         return f"Wetterstation {self.id}"
 
 
+class HistoricalData(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="historical_data", verbose_name="Schlag")
+    previous_crop1 = models.CharField(max_length=255, verbose_name="Vorfrucht 1")
+    previous_crop2 = models.CharField(max_length=255, verbose_name="Vorfrucht 2")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Eintrag vom")
+
+    class Meta:
+        verbose_name = "Historische Daten"
+        verbose_name_plural = "Historische Daten"
+        constraints = [
+            models.UniqueConstraint(fields=['plot'], name='unique_plot_historical_data')
+        ]
+
+
+class SoilPreparation(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    INTENSITY_CHOICES = [
+        ('flach', 'Flach'),
+        ('mittel', 'Mittel'),
+        ('tief', 'Tief'),
+    ]
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="soil_preparations", verbose_name="Schlag")
+    completed = models.BooleanField(default=True, verbose_name="Durchgeführt")
+    intensity = models.CharField(max_length=10, choices=INTENSITY_CHOICES, verbose_name="Intensität")
+    type = models.CharField(max_length=255, verbose_name="Art der Durchführung")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Prozessdaten 1 - Bodenvorbereitung"  # Singular
+        verbose_name_plural = "Prozessdaten 1 - Bodenvorbereitungen"  # Plural
+
+
+class Fertilization(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    FERTILIZER_CHOICES = [
+        ('type1', 'Type 1'),  # Replace '?' with actual options
+        ('type2', 'Type 2'),
+        ('type3', 'Type 3'),
+    ]
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="fertilizations")
+    completed = models.BooleanField(default=True, verbose_name="Düngung erfolgt")
+    fertilizer = models.CharField(max_length=50, choices=FERTILIZER_CHOICES, verbose_name="Dünger")
+    amount = models.IntegerField(verbose_name="Menge (kg/ha)")  # kg/ha
+    created_at = models.DateField(default=now, verbose_name="Zeitpunkt der Düngung")
+
+    class Meta:
+        verbose_name = "Prozessdaten 2 - Düngung"  # Singular
+        verbose_name_plural = "Prozessdaten 2 - Düngung"  # Plural
+
+
+class Seeding(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="seedings")
+    variety = models.CharField(max_length=255)
+    seeding_rate = models.IntegerField()
+    seedbed_width = models.IntegerField()
+    thousand_grain_weight = models.FloatField(default=12.5)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Prozessdaten 3 - Aussaat"  # Singular
+        verbose_name_plural = "Prozessdaten 3 - Aussaat"  # Plural
+
+
+class TopCut(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="topcuts")
+    cutting_height = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Bestandspflege - Kopfschnitt"  # Singular
+        verbose_name_plural = "Bestandspflege - Kopfschnitt"  # Singular
+
+
+class WeedControlMechanic(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    EMERGENCE_CHOICES = [
+        ('Nach dem Auflauf', 'Nach dem Auflauf'),
+        ('Vor dem Auflauf', 'Vor dem Auflauf'),
+    ]
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="mechanic_weed_controls")
+    hacken = models.BooleanField(default=False)
+    striegeln = models.BooleanField(default=False)
+    rollen = models.BooleanField(default=False)
+    emergence = models.CharField(max_length=20, choices=EMERGENCE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Bestandspflege - Unkrautbekämpfung - Mechanisch"  # Singular
+        verbose_name_plural = "Bestandspflege - Unkrautbekämpfung - Mechanisch"  # Singular
+
+
+class WeedControlChemical(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="chemical_weed_controls")
+    substance = models.CharField(max_length=255)
+    amount = models.IntegerField()  # Define unit in comments or elsewhere
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Bestandspflege - Unkrautbekämpfung - Chemisch"  # Singular
+        verbose_name_plural = "Bestandspflege - Unkrautbekämpfung - Chemisch"  # Plural
+
+
+class Harvest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    PROCEDURE_CHOICES = [
+        ('Wirr', 'Wirr'),
+        ('Parallel', 'Parallel'),
+    ]
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="harvests")
+    procedure = models.CharField(max_length=20, choices=PROCEDURE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Prozessdaten 7 - Ernte"  # Singular
+        verbose_name_plural = "Prozessdaten 7 - Ernte"  # Plural
+
+
+class Conditioning(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    PROCEDURE_CHOICES = [
+        ('Wenden', 'Wenden'),
+        ('Lüften', 'Lüften'),
+    ]
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="conditionings")
+    procedure = models.CharField(max_length=20, choices=PROCEDURE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Prozessdaten 8 - Konditionierung"  # Singular
+        verbose_name_plural = "Prozessdaten 8 - Konditionierung"  # Plural
+
+
+class Bailing(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="bailings")
+    weight = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Prozessdaten 9 - Ballen"  # Singular
+        verbose_name_plural = "Prozessdaten 9 - Ballen"  # Plural
+
+
+class PlantCharacteristicsBase(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='plant_characteristics_base',
+                             verbose_name="Schlag")
+    # Raster
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Verlaufsanalytik - Pflanzenmerkmal - Analog"
+        verbose_name_plural = "Verlaufsanalytik - Pflanzenmerkmale - Analog"
+
+    def __str__(self):
+        return f"Pflanzenmerkmale (unten) {self.id}"
+
+
+class PlantCharacteristicsTop(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="ID")
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='plant_characteristics_top',
+                             verbose_name="Schlag")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Verlaufsanalytik - Pflanzenmerkmale - Drohne"
+        verbose_name_plural = "Verlaufsanalytik - Pflanzenmerkmale - Drohne"
+
+    def __str__(self):
+        return f"Pflanzenmerkmale (oben) {self.id}"
+
+
 class WeatherData(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID")
 
-    # TODO: ForeignKey zu welcher Wetterstation
-    # TODO: Datetime der Datenaufnahme
-    # TODO: Niederschlag
-    # TODO: Wind
-    # TODO: Sonnenstunden?
-    # TODO: Luftfeuchtigkeit
-    # TODO: Temperatur
-    # TODO: Luftdruck
-    # TODO: Bodentemperatur
-    # TODO: Weitere Kennwerte?
-
     class Meta:
-        verbose_name = "Wettermessung"
-        verbose_name_plural = "Wettermessungen"
+        verbose_name = "Verlaufsanalytik - Wettermessung"
+        verbose_name_plural = "Verlaufsanalytik - Wettermessungen"
 
     def __str__(self):
         return f"Wettermessung {self.id}"
@@ -162,22 +238,9 @@ class SoilData(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID")
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='soil_data', verbose_name="Schlag")
 
-    # TODO: datetime
-    # TODO: Bodenstrukturanalyse Tonanteil
-    # TODO: soil_temperature
-    # TODO: soil_moisture
-    # TODO: soil_type
-    # TODO: soil_texture
-    # TODO: pH_value
-    # TODO: Nmin (Nitrogen/Ammonium)
-    # TODO: Plant Available Phosphorus
-    # TODO: Soil Organic Matter
-    # TODO: Soil Organic Carbon
-    # TODO: Magnesium
-
     class Meta:
-        verbose_name = "Bodenanalyse"
-        verbose_name_plural = "Bodenanalysen"
+        verbose_name = "Verlaufsanalytik - Bodenanalyse"
+        verbose_name_plural = "Verlaufsanalytik - Bodenanalysen"
 
     def __str__(self):
         return f"Bodenanalyse {self.id}"

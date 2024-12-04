@@ -1,11 +1,16 @@
 from django import forms
 from django.contrib.gis import admin
-from .models import Field, SurveyCategory, Plot, PreparationData
-from .models import SoilData, WeatherData, WeatherStation, PlantCharacteristicsTop, PlantCharacteristicsBase
 from import_export.admin import ImportExportModelAdmin
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import ValidationError
 from .admin_resources import FieldResource
+from .models import (
+    Field, Plot, HistoricalData, SoilPreparation, Fertilization,
+    Seeding, TopCut, WeedControlMechanic, WeedControlChemical,
+    Harvest, Conditioning, Bailing, WeatherStation, WeatherData,
+    PlantCharacteristicsTop, PlantCharacteristicsBase,
+    SoilData
+)
 
 
 # Shared form functionality for handling GeoJSON or WKT inputs
@@ -26,20 +31,6 @@ class LocationInputForm(forms.ModelForm):
         raise ValidationError("Please provide polygon coordinates in WKT or GeoJSON.")
 
 
-# Form for Plot with GeoJSON or WKT input
-class PlotAdminForm(LocationInputForm):
-    class Meta:
-        model = Plot
-        fields = ['field', 'category', 'location_input']
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        instance.location = self.cleaned_data["location_input"]
-        if commit:
-            instance.save()
-        return instance
-
-
 # Form for Field with GeoJSON or WKT input
 class FieldAdminForm(LocationInputForm):
     class Meta:
@@ -54,57 +45,160 @@ class FieldAdminForm(LocationInputForm):
         return instance
 
 
-# Admin for Plot with GeoJSON or WKT input
-class PlotAdmin(ImportExportModelAdmin):
-    form = PlotAdminForm
-    list_display = ('id', 'field', 'category', 'size')
-    list_filter = ('field', 'category')
-
-
 class FieldAdmin(ImportExportModelAdmin):
-    list_display = ('name', 'size')
+    list_display = ('name', 'size',)
     form = FieldAdminForm
     resource_class = FieldResource  # Attach the resource class
 
 
-# Admin for SurveyCategory
-class SurveyCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+# Form for Plot with GeoJSON or WKT input
+class PlotAdminForm(LocationInputForm):
+    class Meta:
+        model = Plot
+        fields = ['field', 'location_input']
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.location = self.cleaned_data["location_input"]
+        if commit:
+            instance.save()
+        return instance
 
 
-# Admin for PreparationData
-class PreparationDataAdmin(admin.ModelAdmin):
-    list_display = ('plot', 'crop_type', 'seeding_rate', 'fertilization_amount', 'soil_preparation')
+# Admin for Plot with GeoJSON or WKT input
+class PlotAdmin(ImportExportModelAdmin):
+    form = PlotAdminForm
+    list_display = ('name', 'field', 'size',)
+    list_filter = ('field',)
 
 
-# SoilData, WeatherData, WeatherStation, PlantCharacteristicsTop, PlantCharacteristicsBase
-class SoilDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'plot')
+class HistoricalDataInline(admin.TabularInline):
+    model = HistoricalData
+    extra = 0
 
 
-class WeatherDataAdmin(admin.ModelAdmin):
-    list_display = ('id',)
+class HistoricalDataAdmin(admin.ModelAdmin):
+    list_display = ('plot', 'previous_crop1', 'previous_crop2', 'created_at')
+    search_fields = ('plot__id',)
 
 
-class WeatherStationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'location')
+class SoilPreparationInline(admin.TabularInline):
+    model = SoilPreparation
+    extra = 0
 
 
-class PlantCharacteristicsTopAdmin(admin.ModelAdmin):
-    list_display = ('id', 'plot')
+class SoilPreparationAdmin(ImportExportModelAdmin):
+    list_display = ('plot', 'intensity', 'type', 'completed', 'created_at')
+    list_filter = ('intensity', 'completed')
+    search_fields = ('plot__id',)
 
 
-class PlantCharacteristicsBaseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'plot', 'height', 'color', 'growth_form', 'stem_diameter', 'damage')
+class FertilizationInline(admin.TabularInline):
+    model = Fertilization
+    extra = 0
+    verbose_name = "Düngung"
+    verbose_name_plural = "Düngungen"
+
+
+class FertilizationAdmin(admin.ModelAdmin):
+    list_display = ('plot', 'fertilizer', 'amount', 'completed', 'created_at')
+    list_filter = ('fertilizer', 'completed')
+    search_fields = ('plot__id',)
+
+
+class SeedingInline(admin.TabularInline):
+    model = Seeding
+    extra = 0
+    verbose_name = "Aussaat"
+    verbose_name_plural = "Aussaaten"
+
+
+class SeedingAdmin(admin.ModelAdmin):
+    list_display = ('plot', 'variety', 'seeding_rate', 'thousand_grain_weight', 'created_at')
+    search_fields = ('plot__id', 'variety')
+
+
+class TopCutInline(admin.TabularInline):
+    model = TopCut
+    extra = 0
+    verbose_name = "Schnitt"
+    verbose_name_plural = "Schnitte"
+
+
+class TopCutAdmin(admin.ModelAdmin):
+    list_display = ('plot', 'cutting_height', 'created_at')
+    search_fields = ('plot__id',)
+
+
+class HarvestInline(admin.TabularInline):
+    model = Harvest
+    extra = 0
+    verbose_name = "Ernte"
+    verbose_name_plural = "Ernten"
+
+
+class HarvestAdmin(admin.ModelAdmin):
+    list_display = ('plot', 'procedure', 'created_at')
+    list_filter = ('procedure',)
+    search_fields = ('plot__id',)
+
+
+class ConditioningInline(admin.TabularInline):
+    model = Conditioning
+    extra = 0
+    verbose_name = "Konditionierung"
+    verbose_name_plural = "Konditionierungen"
+
+
+class ConditioningAdmin(admin.ModelAdmin):
+    list_display = ('plot', 'procedure', 'created_at')
+    list_filter = ('procedure',)
+    search_fields = ('plot__id',)
+
+
+class BailingInline(admin.TabularInline):
+    model = Bailing
+    extra = 0
+    verbose_name = "Ballierung"
+    verbose_name_plural = "Ballierungen"
+
+
+class BailingAdmin(admin.ModelAdmin):
+    list_display = ('plot', 'weight', 'created_at')
+    search_fields = ('plot__id',)
+
+
+class WeedControlMechanicInline(admin.TabularInline):
+    model = WeedControlMechanic
+    extra = 0
+
+
+class WeedControlMechanicAdmin(ImportExportModelAdmin):
+    list_display = ('plot', 'emergence', 'hacken', 'striegeln', 'rollen', 'created_at')
+    list_filter = ('emergence',)
+    search_fields = ('plot__id',)
+
+
+class WeedControlChemicalInline(admin.TabularInline):
+    model = WeedControlChemical
+    extra = 0
+
+
+class WeedControlChemicalAdmin(admin.ModelAdmin):
+    list_display = ('plot', 'substance', 'amount', 'created_at')
+    search_fields = ('plot__id', 'substance')
 
 
 # Register models with their custom admin classes
 admin.site.register(Field, FieldAdmin)
-admin.site.register(SurveyCategory, SurveyCategoryAdmin)
 admin.site.register(Plot, PlotAdmin)
-admin.site.register(PreparationData, PreparationDataAdmin)
-admin.site.register(SoilData, SoilDataAdmin)
-admin.site.register(WeatherData, WeatherDataAdmin)
-admin.site.register(WeatherStation, WeatherStationAdmin)
-admin.site.register(PlantCharacteristicsTop, PlantCharacteristicsTopAdmin)
-admin.site.register(PlantCharacteristicsBase, PlantCharacteristicsBaseAdmin)
+admin.site.register(HistoricalData, HistoricalDataAdmin)
+admin.site.register(SoilPreparation, SoilPreparationAdmin)
+admin.site.register(Fertilization, FertilizationAdmin)
+admin.site.register(Seeding, SeedingAdmin)
+admin.site.register(TopCut, TopCutAdmin)
+admin.site.register(WeedControlMechanic, WeedControlMechanicAdmin)
+admin.site.register(WeedControlChemical, WeedControlChemicalAdmin)
+admin.site.register(Harvest, HarvestAdmin)
+admin.site.register(Conditioning, ConditioningAdmin)
+admin.site.register(Bailing, BailingAdmin)
