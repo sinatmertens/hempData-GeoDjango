@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Preparation Data</title>
+    <title>Add Historical Data</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css">
     <style>
         #map {
@@ -17,9 +17,9 @@
     </style>
 </head>
 <body>
-    <h1>Add Preparation Data</h1>
+    <h1>Add Historical Data</h1>
 
-    <form method="post" id="preparationForm">
+    <form method="post" id="historicalDataForm">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="hidden" id="selected_plot_id" name="plot"> <!-- Hidden field to store selected plot ID -->
@@ -31,11 +31,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
     <script>
         // Initialize the map
-        const map = L.map('map').setView([51.2134, 12.2692], 17);
+        const map = L.map('map').setView([51.2134, 12.2692], 14);
 
         // Add a satellite base layer from ESRI
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+            maxZoom: 18,
             attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         }).addTo(map);
 
@@ -45,16 +45,8 @@
         const plotLayers = {};  // Store each plot layer by ID for easy access
 
         function onEachFeature(feature, layer) {
-            // Bind a popup with the plot ID
-            layer.bindPopup("Schlag: " + feature.properties.id);  // Ensure we're accessing `id`
-
-            // Add plot ID as label
-            const label = L.divIcon({
-                className: 'plot-label',
-                html: "Feld " + feature.properties.id,
-                iconSize: [40, 10]
-            });
-            L.marker(layer.getBounds().getCenter(), { icon: label }).addTo(map);
+            // Bind a popup with the plot name
+            layer.bindPopup("Plot: " + feature.properties.name);  // Access name property
 
             // Store layer reference by plot ID for easy access
             plotLayers[feature.properties.id] = layer;
@@ -67,11 +59,12 @@
                 layer.setStyle({ color: 'red', weight: 3 });
                 selectedPlotLayer = layer;
 
-                // Update hidden input and dropdown with selected plot ID
+                // Update hidden input field with selected plot ID
                 document.getElementById('selected_plot_id').value = feature.properties.id;
-                document.querySelector('#id_plot').value = feature.properties.id; // Update dropdown
+                document.querySelector('#id_plot').value = feature.properties.id;  // Update dropdown
             });
         }
+
 
         // Add GeoJSON layer with interaction
         L.geoJSON(plotData, {

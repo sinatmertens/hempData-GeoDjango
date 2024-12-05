@@ -1,7 +1,9 @@
 # hempdata/views.py
 from django.shortcuts import render, redirect
+from .models import Plot, HistoricalData
 from .forms import HistoricalDataForm
 from django.core.serializers import serialize
+from .models import Plot
 from django.http import HttpResponse
 import json
 
@@ -17,22 +19,28 @@ def navigation(request):
     return render(request, 'hempdata/navigation.html', {'form': form})
 
 
-# def map_view(request):
-#    fields_geojson = serialize('geojson', Field.objects.all(), geometry_field='location')
-#    plots_geojson = serialize('geojson', Plot.objects.all(), geometry_field='location')
 
-#    context = {
-#        'fields_geojson': fields_geojson,
-#        'plots_geojson': plots_geojson,
-#    }
-#    return render(request, 'hempdata/map_view.html', context)
+
 
 def create_historical_data(request):
+    # Handle form submission
     if request.method == 'POST':
         form = HistoricalDataForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('navigation')  # Zurück zur Navigation nach dem Speichern
+            return redirect('navigation')  # Redirect to another page after saving
     else:
         form = HistoricalDataForm()
-    return render(request, 'hempdata/historical_data_form.html', {'form': form})
+
+    # Serialize Plot objects to GeoJSON
+    plots_geojson = serialize(
+        'geojson',
+        Plot.objects.all(),
+        geometry_field='geometry',  # Ensure 'geometry' is the spatial field
+        fields=('id', 'name')
+    )
+
+    return render(request, 'hempdata/historical_data_form.html', {
+        'form': form,
+        'plots_geojson': plots_geojson,
+    })
