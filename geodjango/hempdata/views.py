@@ -82,32 +82,32 @@ def create_soil_preparation(request):
         'plots_geojson': plots_geojson,
     })
 
-#
-# def create_fertilization(request):
-#     if request.method == 'POST':
-#         form = FertilizationForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, "Düngungsdaten wurden erfolgreich hinzugefügt.")
-#             return render(request, 'hempdata/fertilization_form.html', {
-#                 'form': FertilizationForm(),
-#                 'plots_geojson': serialize('geojson', Plot.objects.all(), geometry_field='geometry',
-#                                            fields=('id', 'name')),
-#             })
-#     else:
-#         form = FertilizationForm()
-#
-#     plots_geojson = serialize(
-#         'geojson',
-#         Plot.objects.all(),
-#         geometry_field='geometry',
-#         fields=('id', 'name')
-#     )
-#
-#     return render(request, 'hempdata/fertilization_form.html', {
-#         'form': form,
-#         'plots_geojson': plots_geojson,
-#     })
+
+def create_fertilization(request):
+    if request.method == 'POST':
+        form = FertilizationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Düngungsdaten wurden erfolgreich hinzugefügt.")
+            return render(request, 'hempdata/fertilization_form.html', {
+                'form': FertilizationForm(),
+                'plots_geojson': serialize('geojson', Plot.objects.all(), geometry_field='geometry',
+                                           fields=('id', 'name')),
+            })
+    else:
+        form = FertilizationForm()
+
+    plots_geojson = serialize(
+        'geojson',
+        Plot.objects.all(),
+        geometry_field='geometry',
+        fields=('id', 'name')
+    )
+
+    return render(request, 'hempdata/fertilization_form.html', {
+        'form': form,
+        'plots_geojson': plots_geojson,
+    })
 
 
 def create_seeding(request):
@@ -115,11 +115,13 @@ def create_seeding(request):
         form = SeedingForm(request.POST)
         if form.is_valid():
             form.save()
+            # Erfolgsmeldung anzeigen
             messages.success(request, "Aussaatdaten wurden erfolgreich hinzugefügt.")
             return render(request, 'hempdata/seeding_form.html', {
                 'form': SeedingForm(),
                 'plots_geojson': serialize('geojson', Plot.objects.all(), geometry_field='geometry',
                                            fields=('id', 'name')),
+                'redirect': True,  # Trigger für JavaScript
             })
     else:
         form = SeedingForm()
@@ -158,7 +160,7 @@ def create_top_cut(request):
         fields=('id', 'name')
     )
 
-    return render(request, 'hempdata/top_cut_form.html', {
+    return render(request, 'hempdata/topcut_form.html', {
         'form': form,
         'plots_geojson': plots_geojson,
     })
@@ -185,7 +187,7 @@ def create_weed_control_mechanic(request):
         fields=('id', 'name')
     )
 
-    return render(request, 'hempdata/weed_control_mechanic_form.html', {
+    return render(request, 'hempdata/weedcontrol_mechanic_form.html', {
         'form': form,
         'plots_geojson': plots_geojson,
     })
@@ -212,7 +214,7 @@ def create_weed_control_chemical(request):
         fields=('id', 'name')
     )
 
-    return render(request, 'hempdata/weed_control_chemical_form.html', {
+    return render(request, 'hempdata/weedcontrol_chemical_form.html', {
         'form': form,
         'plots_geojson': plots_geojson,
     })

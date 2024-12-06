@@ -9,7 +9,7 @@ class Field(models.Model):
     name = models.CharField(max_length=255)
     size = models.IntegerField()
     location = models.PolygonField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Standort - Feld"  # Singular
@@ -25,7 +25,7 @@ class Plot(models.Model):
     name = models.CharField(max_length=255)
     size = models.IntegerField()
     location = models.PolygonField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Standort - Schlag"  # Singular
@@ -37,7 +37,7 @@ class Plot(models.Model):
 
 class WeatherStation(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID")
-    location = models.PointField()
+    location = models.PointField(verbose_name="Standort")
 
     class Meta:
         verbose_name = "Standort - Wetterstation"
@@ -52,7 +52,7 @@ class HistoricalData(models.Model):
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="historical_data", verbose_name="Schlag")
     previous_crop1 = models.CharField(max_length=255, verbose_name="Vorfrucht 1")
     previous_crop2 = models.CharField(max_length=255, verbose_name="Vorfrucht 2")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Eintrag vom")
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Historische Daten"
@@ -73,7 +73,7 @@ class SoilPreparation(models.Model):
     completed = models.BooleanField(default=True, verbose_name="Durchgeführt")
     intensity = models.CharField(max_length=10, choices=INTENSITY_CHOICES, verbose_name="Intensität")
     type = models.CharField(max_length=255, verbose_name="Art der Durchführung")
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Prozessdaten 1 - Bodenvorbereitung"  # Singular
@@ -87,7 +87,7 @@ class Fertilization(models.Model):
         ('type2', 'Type 2'),
         ('type3', 'Type 3'),
     ]
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="fertilizations")
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="fertilizations", verbose_name="Schlag")
     completed = models.BooleanField(default=True, verbose_name="Düngung erfolgt")
     fertilizer = models.CharField(max_length=50, choices=FERTILIZER_CHOICES, verbose_name="Dünger")
     amount = models.IntegerField(verbose_name="Menge (kg/ha)")  # kg/ha
@@ -100,12 +100,12 @@ class Fertilization(models.Model):
 
 class Seeding(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="seedings")
-    variety = models.CharField(max_length=255)
-    seeding_rate = models.IntegerField()
-    seedbed_width = models.IntegerField()
-    thousand_grain_weight = models.FloatField(default=12.5)
-    created_at = models.DateTimeField(auto_now_add=True)
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="seedings", verbose_name="Schlag")
+    variety = models.CharField(max_length=255, verbose_name="Kulturart")
+    seeding_rate = models.IntegerField(verbose_name="Ausaatstärke (kg/ha)")
+    seedbed_width = models.IntegerField(verbose_name="Tausendkorngewicht (kg)")
+    thousand_grain_weight = models.FloatField(default=12.5, verbose_name="•	Saatbettreite (cm)")
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Prozessdaten 3 - Aussaat"  # Singular
@@ -114,9 +114,9 @@ class Seeding(models.Model):
 
 class TopCut(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="topcuts")
-    cutting_height = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="topcuts", verbose_name="Schlag")
+    cutting_height = models.IntegerField(verbose_name="Schnitthöhe")
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Bestandspflege - Kopfschnitt"  # Singular
@@ -129,12 +129,12 @@ class WeedControlMechanic(models.Model):
         ('Nach dem Auflauf', 'Nach dem Auflauf'),
         ('Vor dem Auflauf', 'Vor dem Auflauf'),
     ]
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="mechanic_weed_controls")
-    hacken = models.BooleanField(default=False)
-    striegeln = models.BooleanField(default=False)
-    rollen = models.BooleanField(default=False)
-    emergence = models.CharField(max_length=20, choices=EMERGENCE_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="mechanic_weed_controls", verbose_name="Schlag")
+    hacken = models.BooleanField(default=False, verbose_name="Hacken")
+    striegeln = models.BooleanField(default=False, verbose_name="Striegeln")
+    rollen = models.BooleanField(default=False, verbose_name="Rollen")
+    emergence = models.CharField(max_length=20, choices=EMERGENCE_CHOICES, verbose_name="Nach/Vor dem Auflauf")
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Bestandspflege - Unkrautbekämpfung - Mechanisch"  # Singular
@@ -143,10 +143,10 @@ class WeedControlMechanic(models.Model):
 
 class WeedControlChemical(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="chemical_weed_controls")
-    substance = models.CharField(max_length=255)
-    amount = models.IntegerField()  # Define unit in comments or elsewhere
-    created_at = models.DateTimeField(auto_now_add=True)
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="chemical_weed_controls", verbose_name="Schlag")
+    substance = models.CharField(max_length=255, verbose_name="Substanz")
+    amount = models.IntegerField(verbose_name="Menge")
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Bestandspflege - Unkrautbekämpfung - Chemisch"  # Singular
@@ -159,9 +159,9 @@ class Harvest(models.Model):
         ('Wirr', 'Wirr'),
         ('Parallel', 'Parallel'),
     ]
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="harvests")
-    procedure = models.CharField(max_length=20, choices=PROCEDURE_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="harvests", verbose_name="Schlag")
+    procedure = models.CharField(max_length=20, choices=PROCEDURE_CHOICES, verbose_name="Prozedur")
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Prozessdaten 7 - Ernte"  # Singular
@@ -174,9 +174,9 @@ class Conditioning(models.Model):
         ('Wenden', 'Wenden'),
         ('Lüften', 'Lüften'),
     ]
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="conditionings")
-    procedure = models.CharField(max_length=20, choices=PROCEDURE_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="conditioning", verbose_name="Schlag")
+    procedure = models.CharField(max_length=20, choices=PROCEDURE_CHOICES, verbose_name="Prozedur")
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Prozessdaten 8 - Konditionierung"  # Singular
@@ -185,9 +185,9 @@ class Conditioning(models.Model):
 
 class Bailing(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
-    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="bailings")
-    weight = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="bailings", verbose_name="Schlag")
+    weight = models.IntegerField(verbose_name="Gewicht")
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Prozessdaten 9 - Ballen"  # Singular
@@ -199,7 +199,7 @@ class PlantCharacteristicsBase(models.Model):
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='plant_characteristics_base',
                              verbose_name="Schlag")
     # Raster
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Verlaufsanalytik - Pflanzenmerkmal - Analog"
@@ -213,7 +213,7 @@ class PlantCharacteristicsTop(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID")
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name='plant_characteristics_top',
                              verbose_name="Schlag")
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateField(auto_now_add=True, verbose_name="Erhebungszeitpunkt")
 
     class Meta:
         verbose_name = "Verlaufsanalytik - Pflanzenmerkmale - Drohne"
