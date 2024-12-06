@@ -32,7 +32,7 @@ class Plot(models.Model):
         verbose_name_plural = "Standort - Schläge"  # Plural
 
     def __str__(self):
-        return f"{self.name} in {self.field.name}"
+        return f"{self.field.name} - {self.name}"
 
 
 class WeatherStation(models.Model):
