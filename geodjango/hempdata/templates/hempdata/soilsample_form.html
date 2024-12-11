@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historische Daten</title>
+    <title>Bodenprobe</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@latest/dist/leaflet.css" />
     <style>
@@ -57,12 +57,7 @@
 </head>
 <body>
 <div class="container mt-5">
-    <h1 class="mb-4">Historische Daten</h1>
-
-    <p class="text-muted">
-        In diesem Formular erfassen Sie die historischen Daten für einen ausgewählten Schlag.
-    </p>
-
+    <h1 class="mb-4">Bodenprobe</h1>
     <!-- Display success or error messages -->
     {% if messages %}
         <div>
@@ -74,6 +69,7 @@
             {% endfor %}
         </div>
     {% endif %}
+
 
     <!-- Map Section -->
     <div id="map"></div>
@@ -99,6 +95,7 @@
             <a href="{% url 'navigation' %}" class="btn btn-secondary">Zurück zur Übersicht</a>
         </div>
     </form>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

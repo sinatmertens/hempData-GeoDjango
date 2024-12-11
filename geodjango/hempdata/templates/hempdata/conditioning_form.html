@@ -3,13 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conditioning Test</title>
+    <title>Konditionierung</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/leaflet"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@latest/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px; /* Fügt Platz unter der Karte hinzu */
+        }
+
+        /* Custom Styling for Select Dropdown to Match Input Fields */
+        .form-select, .form-control {
+            border: 1px solid; /* Light border */
+            font-size: 16px; /* Consistent font size */
+            width: 22.5%;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Blue border on focus */
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            padding-top: 30px;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 <div class="container mt-5">
-    <h1 class="mb-4">Conditioning Test</h1>
+    <h1 class="mb-4">Konditionierung</h1>
     <!-- Display success or error messages -->
     {% if messages %}
         <div>
@@ -22,21 +70,97 @@
         </div>
     {% endif %}
 
-    <!-- Form Section -->
+
+    <!-- Map Section -->
+    <div id="map"></div>
+
+       <!-- Form Section -->
     <form method="post" class="mb-5">
         {% csrf_token %}
+
+        {% for field in form %}
         <div class="mb-3">
-            {{ form.as_p }}
+            <!-- Label oberhalb des Eingabefeldes -->
+            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label><br>
+            <!-- Eingabefeld -->
+            {{ field }}
+            <!-- Hilfetext unter dem Eingabefeld -->
+            {% if field.help_text %}
+            <br><small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
         </div>
+        {% endfor %}
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Save</button>
             <a href="{% url 'navigation' %}" class="btn btn-secondary">Zurück zur Übersicht</a>
         </div>
     </form>
 
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-ajax/dist/leaflet.ajax.min.js"></script>
+<script type="text/javascript">
+
+    // Create a map instance
+    var map = L.map('map').setView([51.210, 12.276], 15);
+
+    // Add OpenStreetMap tile layer to the map
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Parse the GeoJSON data passed from the Django view
+    var plotsGeoJSON = {{ plots_geojson|safe }};
+
+    // Variable to keep track of the selected plot
+    var selectedLayer = null;
+
+    // Function to update the dropdown with the selected plot id
+    function updatePlotDropdown(plotId) {
+        var plotDropdown = document.getElementById('id_plot'); // Get the dropdown by its ID (id_plot)
+        var plotOption = plotDropdown.querySelector('option[value="' + plotId + '"]'); // Find the corresponding option by id
+        if (plotOption) {
+            plotDropdown.value = plotOption.value; // Set the dropdown value to the clicked plot's id
+        }
+    }
+
+    // Function to update the map's layer style (for highlighting the selected plot)
+    function updateLayerStyle(layer) {
+        if (selectedLayer) {
+            // Reset the style of the previously selected layer
+            selectedLayer.setStyle({ color: '#3388ff', weight: 2 });
+        }
+        // Highlight the selected layer by changing its color
+        layer.setStyle({ color: 'red', weight: 4 });
+        selectedLayer = layer; // Set the clicked layer as selected
+    }
+
+    // Add GeoJSON data to the map and bind click event to each feature (plot)
+    L.geoJSON(plotsGeoJSON, {
+        onEachFeature: function (feature, layer) {
+            // Bind a tooltip to the top left corner of the polygon (plot name)
+            layer.bindTooltip(feature.properties.name, {
+                permanent: true,  // Keep the tooltip displayed
+                direction: 'top', // Tooltip direction
+                offset: [0, -20]  // Position the tooltip slightly above the feature
+            });
+
+            // Add a click event to the layer (polygon)
+            layer.on('click', function () {
+                // Log the clicked feature's name to check if it's being captured
+                console.log('Clicked plot name:', feature.properties.name);  // Log the plot name
+
+                // Update the dropdown selection when the plot is clicked
+                updatePlotDropdown(feature.properties.id);  // Use the plot's id to update the dropdown
+
+                // Change the color of the clicked plot
+                updateLayerStyle(layer);
+            });
+        }
+    }).addTo(map);
+</script>
+
 </body>
 </html>

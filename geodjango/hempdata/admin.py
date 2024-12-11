@@ -9,7 +9,7 @@ from .models import (
     Seeding, TopCut, WeedControlMechanic, WeedControlChemical,
     Harvest, Conditioning, Bailing, WeatherStation, WeatherData,
     PlantCharacteristicsTop, PlantCharacteristicsBase,
-    SoilData
+    SoilSample
 )
 
 
@@ -90,6 +90,19 @@ class SoilPreparationInline(admin.TabularInline):
 class SoilPreparationAdmin(ImportExportModelAdmin):
     list_display = ('plot', 'intensity', 'type', 'completed', 'created_at')
     list_filter = ('intensity', 'completed')
+    search_fields = ('plot__id',)
+
+
+class PlantCharacteristicsBaseInline(admin.ModelAdmin):
+    model = PlantCharacteristicsBase
+    extra = 0
+
+
+class PlantCharacteristicsBaseInlineAdmin(ImportExportModelAdmin):
+    list_display = (
+        'plot', 'stem_thickness_one', 'stem_thickness_two', 'plant_density', 'topcut', 'shoots_number', 'growth_form',
+        'created_at')
+    list_filter = ('plot', 'topcut')
     search_fields = ('plot__id',)
 
 
@@ -174,7 +187,7 @@ class WeedControlMechanicInline(admin.TabularInline):
 
 
 class WeedControlMechanicAdmin(ImportExportModelAdmin):
-    list_display = ('plot', 'emergence', 'hacken', 'striegeln', 'rollen', 'created_at')
+    list_display = ('plot', 'emergence', 'created_at')
     list_filter = ('emergence',)
     search_fields = ('plot__id',)
 
@@ -187,6 +200,18 @@ class WeedControlChemicalInline(admin.TabularInline):
 class WeedControlChemicalAdmin(admin.ModelAdmin):
     list_display = ('plot', 'substance', 'amount', 'created_at')
     search_fields = ('plot__id', 'substance')
+
+
+class SoilSampleInline(admin.TabularInline):
+    model = SoilSample
+    extra = 0
+
+
+class SoilSampleAdmin(admin.ModelAdmin):
+    # Fields to display in the list view
+    list_display = ('plot', 'sampling_date', 'ph_value', 'cn_ratio', 'nitrogen_content', 'moisture_content',
+                    'soil_texture', 'phosphorus_availability', 'salt_content', 'soil_compaction')
+    search_fields = ('plot__name',)
 
 
 # Register models with their custom admin classes
@@ -202,3 +227,5 @@ admin.site.register(WeedControlChemical, WeedControlChemicalAdmin)
 admin.site.register(Harvest, HarvestAdmin)
 admin.site.register(Conditioning, ConditioningAdmin)
 admin.site.register(Bailing, BailingAdmin)
+admin.site.register(PlantCharacteristicsBase, PlantCharacteristicsBaseInlineAdmin)
+admin.site.register(SoilSample, SoilSampleAdmin)

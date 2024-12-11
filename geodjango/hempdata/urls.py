@@ -16,5 +16,7 @@ urlpatterns = [
     path('top-cut/', views.create_top_cut, name='topcut_form'),
     path('conditioning/', views.create_conditioning, name='conditioning_form'),
     path('bailing/', views.create_bailing, name='bailing_form'),
+    path('soilsample/', views.create_soilsample, name='soilsample_form'),
+    path('plant-characteristics-base/', views.create_plantcharacteristicsbase, name='plantcharacteristics_base_form'),
 
 ]
