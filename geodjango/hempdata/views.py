@@ -236,6 +236,10 @@ def create_harvest(request):
                 'plots_geojson': serialize('geojson', Plot.objects.all(), geometry_field='location',
                                            fields=('id', 'name')),
             })
+        if ValueError:
+            messages.warning(request, "Für diesen Schlag wurde bereits eine Ernte eingetragen.")
+
+
     else:
         form = HarvestForm()
 

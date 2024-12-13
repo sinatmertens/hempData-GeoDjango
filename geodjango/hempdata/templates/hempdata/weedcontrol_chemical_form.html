@@ -113,16 +113,24 @@
 
     // Parse the GeoJSON data passed from the Django view
     var plotsGeoJSON = {{ plots_geojson|safe }};
+    console.log('Plots GeoJSON:', plotsGeoJSON);
+
+    // Object to store layers by plot ID
+    var plotLayers = {};
 
     // Variable to keep track of the selected plot
     var selectedLayer = null;
 
     // Function to update the dropdown with the selected plot id
     function updatePlotDropdown(plotId) {
-        var plotDropdown = document.getElementById('id_plot'); // Get the dropdown by its ID (id_plot)
-        var plotOption = plotDropdown.querySelector('option[value="' + plotId + '"]'); // Find the corresponding option by id
-        if (plotOption) {
-            plotDropdown.value = plotOption.value; // Set the dropdown value to the clicked plot's id
+        var plotDropdown = document.getElementById('id_plot'); // Get the dropdown by its ID
+        console.log('Updating dropdown to plot ID:', plotId);
+        if (plotId) {
+            plotDropdown.value = plotId; // Set the dropdown value to the clicked plot's id
+            console.log('Dropdown value set to:', plotDropdown.value);
+        } else {
+            plotDropdown.value = ""; // Reset dropdown if no plot is selected
+            console.log('Dropdown reset.');
         }
     }
 
@@ -131,15 +139,26 @@
         if (selectedLayer) {
             // Reset the style of the previously selected layer
             selectedLayer.setStyle({ color: '#3388ff', weight: 2 });
+            console.log('Reset previous layer style.');
         }
-        // Highlight the selected layer by changing its color
-        layer.setStyle({ color: 'red', weight: 4 });
-        selectedLayer = layer; // Set the clicked layer as selected
+        if (layer) {
+            // Highlight the selected layer by changing its color
+            layer.setStyle({ color: 'red', weight: 4 });
+            selectedLayer = layer; // Set the clicked layer as selected
+            console.log('Highlighted layer:', layer.feature.properties.name);
+        } else {
+            selectedLayer = null; // No layer is selected
+            console.log('No layer selected.');
+        }
     }
 
     // Add GeoJSON data to the map and bind click event to each feature (plot)
     L.geoJSON(plotsGeoJSON, {
         onEachFeature: function (feature, layer) {
+            // Store the layer with its plot ID for easy access
+            var plotId = feature.id; // Corrected: use feature.id instead of feature.properties.id
+            plotLayers[plotId] = layer;
+
             // Bind a tooltip to the top left corner of the polygon (plot name)
             layer.bindTooltip(feature.properties.name, {
                 permanent: true,  // Keep the tooltip displayed
@@ -153,13 +172,42 @@
                 console.log('Clicked plot name:', feature.properties.name);  // Log the plot name
 
                 // Update the dropdown selection when the plot is clicked
-                updatePlotDropdown(feature.properties.id);  // Use the plot's id to update the dropdown
+                updatePlotDropdown(feature.id);  // Use the plot's id to update the dropdown
 
                 // Change the color of the clicked plot
                 updateLayerStyle(layer);
             });
         }
     }).addTo(map);
+
+    // Function to highlight plot based on dropdown selection
+    function highlightPlotFromDropdown() {
+        var plotDropdown = document.getElementById('id_plot');
+        var selectedPlotId = plotDropdown.value;
+        console.log('Dropdown selected plot ID:', selectedPlotId);
+
+        if (selectedPlotId && plotLayers[selectedPlotId]) {
+            updateLayerStyle(plotLayers[selectedPlotId]);
+            // Optionally, pan the map to the selected plot
+            map.fitBounds(plotLayers[selectedPlotId].getBounds());
+            console.log('Highlighted plot from dropdown:', plotLayers[selectedPlotId].feature.properties.name);
+        } else {
+            updateLayerStyle(null); // Reset highlight if no plot is selected
+            console.log('No plot selected in dropdown.');
+        }
+    }
+
+    // Add event listener to the dropdown to handle changes
+    document.getElementById('id_plot').addEventListener('change', function() {
+        console.log('Dropdown changed to:', this.value);
+        highlightPlotFromDropdown();
+    });
+
+    // Optional: Highlight the plot if the form has an initial value (e.g., editing an existing Harvest)
+    document.addEventListener('DOMContentLoaded', function() {
+        highlightPlotFromDropdown();
+    });
+
 </script>
 
 </body>

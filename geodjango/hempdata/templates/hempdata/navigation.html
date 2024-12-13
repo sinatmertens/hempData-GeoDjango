@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>hempDATA - Eingabeformulare </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
 
     <style>
         /* General Styles */
@@ -19,10 +21,10 @@
         h1 {
             text-align: center;
             padding: 20px;
-            background-color: #F2EAE0;
             color: black;
             margin: 0;
             font-size: 2rem;
+            font-family: Segoe UI;
         }
 
         h2 {
@@ -30,6 +32,7 @@
             padding: 10px 0;
             color: black;
             border-bottom: 2px solid black;
+            font-family: Segoe UI;
         }
 
         ul {
@@ -42,16 +45,6 @@
             margin: 20px 0;
         }
 
-        a {
-            text-decoration: none;
-            font-size: 1rem;
-            color: white;
-            padding: 10px 15px;
-            border: 1px solid #FFA336;
-            border-radius: 0px;
-            transition: all 0.3s ease;
-            background-color: #FFA336;
-        }
 
         a:hover {
             background-color: white;
@@ -75,6 +68,11 @@
             font-size: 0.9rem;
             color: #666;
         }
+
+        .btn {
+            font-family: Segoe UI;
+        }
+
     </style>
 </head>
 <body>
@@ -82,27 +80,26 @@
     <div class="container">
         <h2>Prozessdaten</h2>
         <ul>
-            <li><a href="{% url 'historical_data_form' %}">Historische Daten</a></li>
-            <li><a href="{% url 'soil_preparation_form' %}">Bodenvorbereitung</a></li>
-            <li><a href="{% url 'fertilization_form' %}">Düngung</a></li>
-            <li><a href="{% url 'seeding_form' %}">Aussaat</a></li>
-            <li><a href="{% url 'harvest_form' %}">Ernte</a></li>
-            <li><a href="{% url 'conditioning_form' %}">Konditionierung</a></li>
+            <li><a href="{% url 'historical_data_form' %}" class="btn btn-primary">Historische Daten</a></li>
+            <li><a href="{% url 'soil_preparation_form' %}" class="btn btn-primary">Bodenvorbereitung</a></li>
+            <li><a href="{% url 'fertilization_form' %}" class="btn btn-primary">Düngung</a></li>
+            <li><a href="{% url 'seeding_form' %}" class="btn btn-primary">Aussaat</a></li>
+            <li><a href="{% url 'harvest_form' %}" class="btn btn-primary">Ernte</a></li>
+            <li><a href="{% url 'conditioning_form' %}" class="btn btn-primary">Konditionierung</a></li>
         </ul>
 
         <h2>Bestandspflege</h2>
         <ul>
-            <li><a href="{% url 'topcut_form' %}">Kopfschnitt</a></li>
-            <li><a href="{% url 'weedcontrol_mechanic_form' %}">Unkrautbekämpfung - Mechanisch</a></li>
-            <li><a href="{% url 'weedcontrol_chemical_form' %}">Unkrautbekämpfung - Chemisch</a></li>
+            <li><a href="{% url 'topcut_form' %}" class="btn btn-primary">Kopfschnitt</a></li>
+            <li><a href="{% url 'weedcontrol_mechanic_form' %}" class="btn btn-primary">Unkrautbekämpfung - Mechanisch</a></li>
+            <li><a href="{% url 'weedcontrol_chemical_form' %}" class="btn btn-primary">Unkrautbekämpfung - Chemisch</a></li>
         </ul>
 
         <h2>Verlaufsanalytik</h2>
         <ul>
-            <li><a href="{% url 'plantcharacteristics_base_form' %}">Pflanzenmerkmale - Manuell</a></li>
-            <li><a href="{% url 'soilsample_form' %}">Bodenprobe</a></li>
-            <li>Bodenanalyse</li>
-            <li>Pflanzenmerkmale (Unten)</li>
+            <li><a href="{% url 'plantcharacteristics_base_form' %}" class="btn btn-primary">Pflanzenmerkmale - Manuell</a></li>
+            <li><a href="{% url 'soilsample_form' %}" class="btn btn-primary">Bodenprobe</a></li>
+
         </ul>
     </div>
 
