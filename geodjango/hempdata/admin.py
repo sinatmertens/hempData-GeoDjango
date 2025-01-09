@@ -5,7 +5,9 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import ValidationError
 from .admin_resources import FieldResource
 from .models import (
-    Field, Plot, HistoricalData, SoilPreparation, Fertilization,
+    Field, Plot, PlotParts,
+    HistoricalData,
+    SoilPreparation, Fertilization,
     Seeding, TopCut, WeedControlMechanic, WeedControlChemical,
     Harvest, Conditioning, Bailing, WeatherStation, WeatherData,
     PlantCharacteristicsTop, PlantCharacteristicsBase,
@@ -72,13 +74,33 @@ class PlotAdmin(ImportExportModelAdmin):
     list_filter = ('field',)
 
 
+class PlotPartsAdminForm(LocationInputForm):
+    class Meta:
+        model = PlotParts
+        fields = ['plot', 'name' , 'size', 'location_input']
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.location = self.cleaned_data["location_input"]
+        if commit:
+            instance.save()
+        return instance
+
+
+# Admin for Plot with GeoJSON or WKT input
+class PlotPartsAdmin(ImportExportModelAdmin):
+    form = PlotPartsAdminForm
+    list_display = ('name', 'plot', 'size',)
+    list_filter = ('plot',)
+
+
 class HistoricalDataInline(admin.TabularInline):
     model = HistoricalData
     extra = 0
 
 
 class HistoricalDataAdmin(admin.ModelAdmin):
-    list_display = ('plot', 'previous_crop1', 'previous_crop2', 'created_at')
+    list_display = ('plot', 'previous_crop', 'sommerung', 'winterung')
     search_fields = ('plot__id',)
 
 
@@ -88,21 +110,8 @@ class SoilPreparationInline(admin.TabularInline):
 
 
 class SoilPreparationAdmin(ImportExportModelAdmin):
-    list_display = ('plot', 'intensity', 'type', 'completed', 'created_at')
-    list_filter = ('intensity', 'completed')
-    search_fields = ('plot__id',)
-
-
-class PlantCharacteristicsBaseInline(admin.ModelAdmin):
-    model = PlantCharacteristicsBase
-    extra = 0
-
-
-class PlantCharacteristicsBaseInlineAdmin(ImportExportModelAdmin):
-    list_display = (
-        'plot', 'stem_thickness_one', 'stem_thickness_two', 'plant_density', 'topcut', 'shoots_number', 'growth_form',
-        'created_at')
-    list_filter = ('plot', 'topcut')
+    list_display = ('plot', 'intensity', 'type', 'created_at')
+    list_filter = ('intensity',)
     search_fields = ('plot__id',)
 
 
@@ -114,8 +123,21 @@ class FertilizationInline(admin.TabularInline):
 
 
 class FertilizationAdmin(admin.ModelAdmin):
-    list_display = ('plot', 'fertilizer', 'amount', 'completed', 'created_at')
-    list_filter = ('fertilizer', 'completed')
+    list_display = ('plot', 'fertilizer', 'amount', 'dosage_form', 'created_at')
+    list_filter = ('fertilizer', 'dosage_form')
+    search_fields = ('plot__id',)
+
+
+class PlantCharacteristicsBaseInline(admin.ModelAdmin):
+    model = PlantCharacteristicsBase
+    extra = 0
+
+
+class PlantCharacteristicsBaseInlineAdmin(ImportExportModelAdmin):
+    list_display = (
+        'plot', 'stem_thickness', 'plant_density', 'topcut', 'shoots_number', 'growth_form',
+        'created_at')
+    list_filter = ('plot', 'topcut')
     search_fields = ('plot__id',)
 
 
@@ -127,8 +149,8 @@ class SeedingInline(admin.TabularInline):
 
 
 class SeedingAdmin(admin.ModelAdmin):
-    list_display = ('plot', 'variety', 'seeding_rate', 'thousand_grain_weight', 'created_at')
-    search_fields = ('plot__id', 'variety')
+    list_display = ('plot', 'variety', 'sorte', 'seeding_rate', 'thousand_grain_weight', 'created_at')
+    search_fields = ('plot__id', 'variety', 'sorte',)
 
 
 class TopCutInline(admin.TabularInline):
@@ -151,9 +173,9 @@ class HarvestInline(admin.TabularInline):
 
 
 class HarvestAdmin(admin.ModelAdmin):
-    list_display = ('plot', 'procedure', 'created_at')
+    list_display = ('plotpart', 'procedure', 'created_at')
     list_filter = ('procedure',)
-    search_fields = ('plot__id',)
+    search_fields = ('plotpart__id',)
 
 
 class ConditioningInline(admin.TabularInline):
@@ -164,9 +186,9 @@ class ConditioningInline(admin.TabularInline):
 
 
 class ConditioningAdmin(admin.ModelAdmin):
-    list_display = ('plot', 'procedure', 'created_at')
+    list_display = ('plotpart', 'procedure', 'created_at')
     list_filter = ('procedure',)
-    search_fields = ('plot__id',)
+    search_fields = ('plotpart__id',)
 
 
 class BailingInline(admin.TabularInline):
@@ -177,7 +199,7 @@ class BailingInline(admin.TabularInline):
 
 
 class BailingAdmin(admin.ModelAdmin):
-    list_display = ('plot', 'weight', 'created_at')
+    list_display = ('plotpart', 'weight', 'procedure', 'amount', 'created_at')
     search_fields = ('plot__id',)
 
 
@@ -187,7 +209,7 @@ class WeedControlMechanicInline(admin.TabularInline):
 
 
 class WeedControlMechanicAdmin(ImportExportModelAdmin):
-    list_display = ('plot', 'emergence', 'created_at')
+    list_display = ('plot', 'procedure', 'procedure_text','emergence', 'created_at')
     list_filter = ('emergence',)
     search_fields = ('plot__id',)
 
@@ -210,13 +232,14 @@ class SoilSampleInline(admin.TabularInline):
 class SoilSampleAdmin(admin.ModelAdmin):
     # Fields to display in the list view
     list_display = ('plot', 'sampling_date', 'ph_value', 'cn_ratio', 'nitrogen_content', 'moisture_content',
-                    'soil_texture', 'phosphorus_availability', 'salt_content', 'soil_compaction')
+                    'soil_texture', 'phosphorus_availability', 'salt_content')
     search_fields = ('plot__name',)
 
 
 # Register models with their custom admin classes
 admin.site.register(Field, FieldAdmin)
 admin.site.register(Plot, PlotAdmin)
+admin.site.register(PlotParts, PlotPartsAdmin)
 admin.site.register(HistoricalData, HistoricalDataAdmin)
 admin.site.register(SoilPreparation, SoilPreparationAdmin)
 admin.site.register(Fertilization, FertilizationAdmin)

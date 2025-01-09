@@ -31,7 +31,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 30px auto;
             padding: 20px;
             background: white;
@@ -94,6 +94,41 @@
             <a href="{% url 'navigation' %}" class="btn btn-secondary">Zurück zur Übersicht</a>
         </div>
     </form>
+
+       <div class="container mt-5">
+  <h2 class="mb-4">Bestehende Pflanzenmerkmalsdaten</h2>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Plot</th>
+                <th>Stängeldicke</th>
+                <th>Pflanzendichte</th>
+                <th>Topcut</th>
+                <th>Anzahl Doppeltriebe</th>
+                <th>Wuchsform</th>
+                <th>Datum</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in plant_characteristics_data %}
+                <tr>
+                    <td>{{ data.plot }}</td>
+                    <td>{{ data.stem_thickness }}</td>
+                    <td>{{ data.plant_density }}</td>
+                    <td>{{ data.topcut }}</td>
+                    <td>{{ data.shoots_number }}</td>
+                    <td>{{ data.growth_form }}</td>
+                    <td>{{ data.created_at }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Keine Daten verfügbar</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
 
 
 </div>
