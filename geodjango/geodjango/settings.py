@@ -21,6 +21,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', 'hempdata-geodjango.onrender.com', "127.0.0.1"]
 
+CSRF_TRUSTED_ORIGINS = ['https://hempdata-geodjango.onrender.com']
 
 # Application definition
 
