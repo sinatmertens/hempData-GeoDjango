@@ -9,10 +9,8 @@ services:
       - .:/app:cached  # Nur für Entwicklung
     ports:
       - "8000:8000"  # GeoDjango läuft auf Port 8000
-    depends_on:
-      - db  # Abhängigkeit von der Datenbank
     environment:
-      - DATABASE_URL=postgresql://postgres:your_password@db:5432/postgres  # Verbindung zur Datenbank
+      - DATABASE_URL=postgresql://admin:diHVnhwd9e3mX5A12tlVBNdN3SxO3kKw@dpg-ctvruvjtq21c73aiucv0-a.frankfurt-postgres.render.com/dbhempdata  # Verbindung zur Datenbank
 
   dash:  # Plotly Dash-Service
     build:
@@ -22,21 +20,8 @@ services:
       - ./dash_app:/app/dash_app:cached  # Nur Dash-App wird in den Container gemountet
     ports:
       - "8050:8050"  # Dash läuft auf Port 8050
-    depends_on:
-      - db  # Abhängigkeit von der Datenbank
     environment:
-      - DATABASE_URL=postgresql://postgres:your_password@db:5432/postgres  # Verbindung zur Datenbank
-
-  db:  # PostgreSQL/PostGIS-Datenbank
-    image: postgis/postgis
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: your_password  # Sicheres Passwort
-    volumes:
-      - postgres_data:/var/lib/postgresql/data  # Benanntes Volume für persistente Daten
-    ports:
-      - "15432:5432"  # Postgres-Port nach außen verfügbar machen
+      - DATABASE_URL=postgresql://admin:diHVnhwd9e3mX5A12tlVBNdN3SxO3kKw@dpg-ctvruvjtq21c73aiucv0-a.frankfurt-postgres.render.com/dbhempdata  # Verbindung zur Datenbank
 
 volumes:
   postgres_data:  # Benanntes Volume für Datenbankdaten

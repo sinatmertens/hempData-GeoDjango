@@ -76,8 +76,9 @@
     </style>
 </head>
 <body>
-    <h1>hempDATA - Eingabeformulare</h1>
+    <h1>hempDATA</h1>
     <div class="container">
+        <h1> Eingabeformulare</h1>
         <h2>Prozessdaten</h2>
         <ul>
             <li><a href="{% url 'historical_data_form' %}" class="btn btn-primary">Historische Daten</a></li>
@@ -101,6 +102,15 @@
             <li><a href="{% url 'plantcharacteristics_base_form' %}" class="btn btn-primary">Pflanzenmerkmale - Manuell</a></li>
             <li><a href="{% url 'soilsample_form' %}" class="btn btn-primary">Bodenprobe</a></li>
 
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>Admin-Bereich</h2>
+        <p>Im Admin-Bereich können Daten eingesehen, hinzugefügt, bearbeitet und gelöscht werden. Er dient zur zentralen Verwaltung aller gespeicherten Inhalte.</p>
+
+        <ul>
+        <li><a href="http://localhost:8000/admin/" class="btn btn-primary">Admin-Bereich</a></li>
         </ul>
     </div>
 

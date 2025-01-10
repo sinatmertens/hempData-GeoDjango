@@ -474,8 +474,8 @@ class SoilSample(models.Model):
     sampling_date = models.DateField(default=now, verbose_name="Probenahmedatum *", help_text="Datum der Bodenprobenahme")
 
     class Meta:
-        verbose_name = "Verlaufsanalytik - Manuell- Bodenproben"
-        verbose_name_plural = "Verlaufsanalytik - Manuell- Bodenproben"
+        verbose_name = "Verlaufsanalytik - Manuell - Bodenproben"
+        verbose_name_plural = "Verlaufsanalytik - Manuell - Bodenproben"
 
     def __str__(self):
         return f"Bodenprobe {self.id} - {self.plot.name}"
