@@ -19,7 +19,7 @@ SECRET_KEY = 'django-insecure-#cxcs@e+#jl02c_04#yr$1kv30=flr&o^huhhvr5&&#6163=r$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'hempdata.onrender.com', "127.0.0.1"]
+ALLOWED_HOSTS = ['localhost', 'hempdata-geodjango.onrender.com', "127.0.0.1"]
 
 
 # Application definition
