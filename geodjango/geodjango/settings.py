@@ -19,7 +19,7 @@ SECRET_KEY = 'django-insecure-#cxcs@e+#jl02c_04#yr$1kv30=flr&o^huhhvr5&&#6163=r$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'hempdata.onrender.com']
+ALLOWED_HOSTS = ['localhost', 'hempdata.onrender.com', "127.0.0.1"]
 
 
 # Application definition
@@ -134,3 +134,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
