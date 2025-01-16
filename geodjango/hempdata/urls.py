@@ -1,10 +1,7 @@
-# hempdata/urls.py
 from django.urls import path
-from django.urls import include
 from . import views
 
 urlpatterns = [
-    #path('hempdata/', include('hempdata.urls')),  # Include app-level URLs
     path('', views.navigation, name='navigation'),
     path('historical-data/new/', views.create_historical_data, name='historical_data_form'),
     path('soil-preparation/new/', views.create_soil_preparation, name='soil_preparation_form'),

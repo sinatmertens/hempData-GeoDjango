@@ -12,7 +12,7 @@ from .models import (
 class HistoricalDataForm(forms.ModelForm):
     class Meta:
         model = HistoricalData
-        fields = ['plot', 'previous_crop', 'sommerung', 'winterung']
+        fields = ['plot', 'previous_crops', 'sommerung', 'winterung']
         widgets = {
             'created_at': forms.DateInput(attrs={'type': 'date'}),
         }

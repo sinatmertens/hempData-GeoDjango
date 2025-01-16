@@ -3,6 +3,33 @@ from django.utils.timezone import now
 import uuid
 
 
+class PlantVariety(models.Model):
+    # ID wird automatisch von Django verwaltet
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)  # Name der Sorte
+    type = models.CharField(max_length=10, choices=[('Hanf', 'Hanf'), ('Flachs', 'Flachs')])  # Typ der Pflanze (Hanf oder Flachs)
+
+    class Meta:
+        verbose_name = "Sortenliste"
+        verbose_name_plural = "Sortenliste"
+
+    def __str__(self):
+        return f"{self.name} ({self.type})"
+
+
+class PreviousCrop(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)  # Name der Vorfrucht
+
+    class Meta:
+        verbose_name = "Vorfrüchte"
+        verbose_name_plural = "Vorfrüchte"
+
+    def __str__(self):
+        return f"{self.name}"
+
+
+
 class Field(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID")
     name = models.CharField(max_length=255, verbose_name="Name des Feldes",
@@ -121,18 +148,13 @@ class HistoricalData(models.Model):
         ("2006 Sommerung", "2006 Sommerung"),
         ("2005 Sommerung", "2005 Sommerung"),
     ]
-    PREVIOUS_CHOICES = [
-        ('Mais', 'Mais'),
-        ('Hanf', 'Hanf'),
-        ('Flachs', 'Flachs'),
-    ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID",
                           help_text="Eindeutige ID der historischen Daten.")
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="historical_data", verbose_name="Schlag *",
                              help_text="Der Schlag, dem diese historischen Daten zugeordnet sind.")
-    previous_crop = models.CharField(max_length=100, choices=PREVIOUS_CHOICES, verbose_name="Vorfrucht",
-                                     help_text="Welche Vorfrucht wurde auf dem Schlag bereits angebaut?")
+    previous_crops = models.ForeignKey(PreviousCrop, on_delete=models.CASCADE, related_name="historical_data", verbose_name="Vorfrucht",
+                                  help_text="Welche Vorfrucht wurde auf dem Schlag bereits angebaut?")
     sommerung = models.CharField(max_length=100, choices=SOMMERUNG_CHOICHES, verbose_name="Jahr der Sommerung",
                                  help_text="Nur Ausfüllen, wenn es sich um eine Sommerung handelt.", blank=True,
                                  null=True)
@@ -199,6 +221,7 @@ class Fertilization(models.Model):
     DOSAGEFORM_CHOICES = [
         ('?', '?')
     ]
+
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="fertilizations", verbose_name="Schlag *",
                              help_text="Der Schlag, für den die Düngung durchgeführt wurde.")
     fertilizer = models.CharField(max_length=50, choices=FERTILIZER_CHOICES, verbose_name="Dünger",
@@ -223,32 +246,13 @@ class Seeding(models.Model):
         ('Flachs', 'Flachs'),
     ]
 
-    SORTE_CHOICES = [
-        ('Ostara 9', 'Ostara 9'),
-        ('Nashinoïde 15', 'Nashinoïde 15'),
-        ('Mona 16', 'Mona 16'),
-        ('Djumbo 20', 'Djumbo 20'),
-        ('Muka 76', 'Muka 76'),
-        ('Futura 83', 'Futura 83'),
-        ('Santhica 27', 'Santhica 27'),
-        ('Futura 75', 'Futura 75'),
-        ('Fibror 79', 'Fibror 79'),
-        ('Felina 32', 'Felina 32'),
-        ('Fedora 17', 'Fedora 17'),
-        ('Ferimon', 'Ferimon'),
-        ('Earlina 08', 'Earlina 08'),
-        ('USO 31', 'USO 31'),
-        ('Dioïca 88', 'Dioïca 88'),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="ID",
                           help_text="Eindeutige ID der Aussaat.")
     plot = models.ForeignKey(Plot, on_delete=models.CASCADE, related_name="seedings", verbose_name="Schlag *",
                              help_text="Der Schlag, für den die Aussaat durchgeführt wurde.")
     variety = models.CharField(max_length=255, choices=VARIETY_CHOICES, verbose_name="Kulturart",
                                help_text="Kulturart (z.B. Hanf, Flachs).")
-    sorte = models.CharField(max_length=255, choices=SORTE_CHOICES, verbose_name="Sorte",
-                               help_text="", null=True, blank=True)
+    sorte = models.ForeignKey(PlantVariety, on_delete=models.CASCADE, related_name="seeding", default="Avian", verbose_name="Sorte")
     seeding_rate = models.FloatField(verbose_name="Ausaatstärke (kg/ha)",
                                        help_text="Die Menge an Saatgut, die pro Hektar ausgesät wurde (in kg/ha).")
     seedbed_width = models.FloatField(default=12.5, verbose_name="Reihenabstand (cm)",

@@ -10,7 +10,7 @@ from .models import (
     SoilPreparation, Fertilization,
     Seeding, TopCut, WeedControlMechanic, WeedControlChemical,
     Harvest, Conditioning, Bailing, WeatherStation, WeatherData,
-    PlantCharacteristicsTop, PlantCharacteristicsBase,
+    PlantCharacteristicsTop, PlantCharacteristicsBase, PlantVariety, PreviousCrop,
     SoilSample
 )
 
@@ -100,7 +100,7 @@ class HistoricalDataInline(admin.TabularInline):
 
 
 class HistoricalDataAdmin(admin.ModelAdmin):
-    list_display = ('plot', 'previous_crop', 'sommerung', 'winterung')
+    list_display = ('plot', 'previous_crops', 'sommerung', 'winterung')
     search_fields = ('plot__id',)
 
 
@@ -235,8 +235,19 @@ class SoilSampleAdmin(admin.ModelAdmin):
                     'soil_texture', 'phosphorus_availability', 'salt_content')
     search_fields = ('plot__name',)
 
+class PlantVarietyAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'type')  # Spalten, die im Admin-Panel angezeigt werden
+    search_fields = ('name',)  # Ermöglicht das Suchen nach dem Namen der Sorte
+    list_filter = ('type',)  # Ermöglicht das Filtern nach Hanf oder Flachs
+
+
+class PreviousCropAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')  # Spalten, die im Admin-Panel angezeigt werden
+    search_fields = ('name',)  # Ermöglicht das Suchen nach dem Namen der Sorte
 
 # Register models with their custom admin classes
+admin.site.register(PreviousCrop, PreviousCropAdmin)
+admin.site.register(PlantVariety, PlantVarietyAdmin)
 admin.site.register(Field, FieldAdmin)
 admin.site.register(Plot, PlotAdmin)
 admin.site.register(PlotParts, PlotPartsAdmin)
